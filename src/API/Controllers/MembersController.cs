@@ -1,4 +1,7 @@
+using System.Security.Claims;
+using API.DTOs;
 using API.Entities;
+using API.Extensions;
 using API.Interfaces;
 using API.Mappers;
 using Microsoft.AspNetCore.Authorization;
@@ -30,4 +33,32 @@ public class MembersController(IMembersRepository membersRepository) : BaseApiCo
     {
         return Ok(await membersRepository.GetPhotosAsync(id));
     }
+
+    [HttpPut]
+    public async Task<ActionResult> UpdateMember(MemberUpdateRequest request)
+    {
+        var memberId = User.GetMemberId();
+        var member = await membersRepository.GetMemberForUpdate(memberId);
+
+        if (member == null)
+        {
+            return BadRequest("Failed to get member");
+        }
+
+        member.DisplayName = request.DisplayName ?? member.DisplayName;
+        member.Description = request.Description ?? member.Description;
+        member.City = request.City ?? member.City;
+        member.Country = request.Country ?? member.Country;
+
+        member.User.DisplayName = request.DisplayName ?? member.User.DisplayName;
+
+        membersRepository.Update(member);
+
+        if (await membersRepository.SaveAllAsync())
+        {
+            return NoContent();
+        }
+
+        return BadRequest("Failed to update profile");
+    } 
 }
