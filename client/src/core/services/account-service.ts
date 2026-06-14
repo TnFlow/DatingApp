@@ -1,16 +1,18 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { LoginCreds, User } from '../../types/user';
+import { LoginCreds, RegisterCreds, User } from '../../types/user';
 import { Observable, tap } from 'rxjs';
-import { RegisterCreds } from '../../types/registerCreds';
+import { environment } from '../../environments/environment';
+import { LikesService } from './likes-service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AccountService {
   private http = inject(HttpClient);
+  private likesService = inject(LikesService);
   currentUser = signal<User | null>(null);
-  baseUrl = "https://localhost:5001/api/";
+  baseUrl = environment.apiUrl;
 
   register(creds: RegisterCreds): Observable<User> {
     return this.http.post<User>(this.baseUrl + "account/register", creds).pipe(
@@ -35,10 +37,13 @@ export class AccountService {
   setCurrentUser(user: User) {
     localStorage.setItem("user", JSON.stringify(user));
     this.currentUser.set(user);
+    this.likesService.getLikeIds();
   }
 
   logout() {
     localStorage.removeItem("user");
+    localStorage.removeItem("filters");
+    this.likesService.clearLikeIds();
     this.currentUser.set(null);
   }
 }
