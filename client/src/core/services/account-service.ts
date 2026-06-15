@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { LoginCreds, RegisterCreds, User } from '../../types/user';
+import { LoginCreds, User } from '../../types/user';
 import { Observable, tap } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { RegisterCreds } from '../../types/registerCreds';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,7 @@ import { environment } from '../../environments/environment';
 export class AccountService {
   private http = inject(HttpClient);
   currentUser = signal<User | null>(null);
-  baseUrl = environment.apiUrl;
+  baseUrl = "https://localhost:5001/api/";
 
   register(creds: RegisterCreds): Observable<User> {
     return this.http.post<User>(this.baseUrl + "account/register", creds).pipe(
